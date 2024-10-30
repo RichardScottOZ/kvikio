@@ -49,33 +49,7 @@ namespace detail {
  * @throw std::invalid_argument if the specified flags are not supported.
  * @throw std::invalid_argument if `o_direct` is true, but `O_DIRECT` is not supported.
  */
-inline int open_fd_parse_flags(const std::string& flags, bool o_direct)
-{
-  int file_flags = -1;
-  if (flags.empty()) { throw std::invalid_argument("Unknown file open flag"); }
-  switch (flags[0]) {
-    case 'r':
-      file_flags = O_RDONLY;
-      if (flags[1] == '+') { file_flags = O_RDWR; }
-      break;
-    case 'w':
-      file_flags = O_WRONLY;
-      if (flags[1] == '+') { file_flags = O_RDWR; }
-      file_flags |= O_CREAT | O_TRUNC;
-      break;
-    case 'a': throw std::invalid_argument("Open flag 'a' isn't supported");
-    default: throw std::invalid_argument("Unknown file open flag");
-  }
-  file_flags |= O_CLOEXEC;
-  if (o_direct) {
-#if defined(O_DIRECT)
-    file_flags |= O_DIRECT;
-#else
-    throw std::invalid_argument("'o_direct' flag unsupported on this platform");
-#endif
-  }
-  return file_flags;
-}
+int open_fd_parse_flags(const std::string& flags, bool o_direct);
 
 /**
  * @brief Open file using `open(2)`
