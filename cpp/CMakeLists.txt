@@ -38,7 +38,7 @@ rapids_cmake_build_type(Release)
 # ##################################################################################################
 # * build options ---------------------------------------------------------------------------------
 
-option(KvikIO_BUILD_SHARED_LIBS "Build KvikIO shared library" ON)
+option(BUILD_SHARED_LIBS "Build KvikIO shared library" ON)
 option(KvikIO_BUILD_EXAMPLES "Configure CMake to build examples" ON)
 option(KvikIO_BUILD_TESTS "Configure CMake to build tests" ON)
 option(KvikIO_REMOTE_SUPPORT "Configure CMake to build with remote IO support" ON)
