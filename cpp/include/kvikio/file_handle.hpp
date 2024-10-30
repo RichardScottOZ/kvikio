@@ -15,11 +15,8 @@
  */
 #pragma once
 
-#include <fcntl.h>
-#include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-
 #include <cstddef>
 #include <cstdlib>
 #include <stdexcept>
@@ -40,18 +37,6 @@ namespace kvikio {
 namespace detail {
 
 /**
- * @brief Parse open file flags given as a string and return oflags
- *
- * @param flags The flags
- * @param o_direct Append O_DIRECT to the open flags
- * @return oflags
- *
- * @throw std::invalid_argument if the specified flags are not supported.
- * @throw std::invalid_argument if `o_direct` is true, but `O_DIRECT` is not supported.
- */
-int open_fd_parse_flags(const std::string& flags, bool o_direct);
-
-/**
  * @brief Open file using `open(2)`
  *
  * @param flags Open flags given as a string
@@ -59,46 +44,16 @@ int open_fd_parse_flags(const std::string& flags, bool o_direct);
  * @param mode Access modes
  * @return File descriptor
  */
-inline int open_fd(const std::string& file_path,
-                   const std::string& flags,
-                   bool o_direct,
-                   mode_t mode)
-{
-  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
-  int fd = ::open(file_path.c_str(), open_fd_parse_flags(flags, o_direct), mode);
-  if (fd == -1) { throw std::system_error(errno, std::generic_category(), "Unable to open file"); }
-  return fd;
-}
+int open_fd(const std::string& file_path, const std::string& flags, bool o_direct, mode_t mode);
 
 /**
  * @brief Get the flags of the file descriptor (see `open(2)`)
  *
  * @return Open flags
  */
-[[nodiscard]] inline int open_flags(int fd)
-{
-  int ret = fcntl(fd, F_GETFL);  // NOLINT(cppcoreguidelines-pro-type-vararg)
-  if (ret == -1) {
-    throw std::system_error(errno, std::generic_category(), "Unable to retrieve open flags");
-  }
-  return ret;
-}
+[[nodiscard]] int open_flags(int fd);
 
-/**
- * @brief Get file size from file descriptor `fstat(3)`
- *
- * @param file_descriptor Open file descriptor
- * @return The number of bytes
- */
-[[nodiscard]] inline std::size_t get_file_size(int file_descriptor)
-{
-  struct stat st {};
-  int ret = fstat(file_descriptor, &st);
-  if (ret == -1) {
-    throw std::system_error(errno, std::generic_category(), "Unable to query file size");
-  }
-  return static_cast<std::size_t>(st.st_size);
-}
+[[nodiscard]] std::size_t get_file_size(int file_descriptor);
 
 }  // namespace detail
 
