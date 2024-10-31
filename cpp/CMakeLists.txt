@@ -42,12 +42,7 @@ option(BUILD_SHARED_LIBS "Build KvikIO shared library" ON)
 option(KvikIO_BUILD_EXAMPLES "Configure CMake to build examples" ON)
 option(KvikIO_BUILD_TESTS "Configure CMake to build tests" ON)
 option(KvikIO_REMOTE_SUPPORT "Configure CMake to build with remote IO support" ON)
-option(KvikIO_CUDA_SUPPORT
-       "Configure CMake to build with CUDA support (required by KvikIO_CUFILE_SUPPORT)" ON
-)
-option(KvikIO_CUFILE_SUPPORT
-       "Configure CMake to build with cuFile support (requires KvikIO_CUDA_SUPPORT)" ON
-)
+option(KvikIO_CUDA_SUPPORT "Configure CMake to build with CUDA support" ON)
 
 # ##################################################################################################
 # * conda environment -----------------------------------------------------------------------------
@@ -77,18 +72,17 @@ if(KvikIO_CUDA_SUPPORT)
   include(cmake/thirdparty/get_nvtx.cmake)
 endif()
 
-if(KvikIO_CUFILE_SUPPORT)
-  if(NOT KvikIO_CUDA_SUPPORT)
-    message(FATAL_ERROR "Cannot enable cuFile support (KvikIO_CUFILE_SUPPORT) "
-                        "without CUDA support (KvikIO_CUDA_SUPPORT)"
-    )
-  endif()
-  rapids_find_package(
-    cuFile REQUIRED
-    BUILD_EXPORT_SET kvikio-exports
-    INSTALL_EXPORT_SET kvikio-exports
-  )
+rapids_find_package(
+  cuFile
+  BUILD_EXPORT_SET kvikio-exports
+  INSTALL_EXPORT_SET kvikio-exports
+)
 
+if(NOT cuFile_FOUND)
+  message(
+    WARNING "Cannot find cuFile - KvikIO will still work but won't use GPUDirect Storage (GDS)"
+  )
+else()
   # Check batch and stream API support (cuFile_BATCH_API_FOUND and cuFile_STREAM_API_FOUND)
   file(READ "${cuFile_INCLUDE_DIRS}/cufile.h" CUFILE_H_STR)
   string(FIND "${CUFILE_H_STR}" "cuFileBatchIOSetUp" cuFileBatchIOSetUp_location)
@@ -118,9 +112,12 @@ add_library(kvikio::kvikio ALIAS kvikio)
 
 target_include_directories(
   kvikio
-  PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+  PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>" "${CUDAToolkit_INCLUDE_DIRS}"
+         "${cuFile_INCLUDE_DIRS}"
   INTERFACE "$<INSTALL_INTERFACE:include>"
 )
+
+# Notice, we do not link to cuda or cufile since KvikIO opens them manually using `dlopen()`.
 target_link_libraries(
   kvikio PUBLIC Threads::Threads BS::thread_pool ${CMAKE_DL_LIBS}
                 $<TARGET_NAME_IF_EXISTS:nvtx3::nvtx3-cpp> $<TARGET_NAME_IF_EXISTS:CURL::libcurl>
