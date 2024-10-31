@@ -123,7 +123,7 @@ target_include_directories(
 )
 target_link_libraries(
   kvikio PUBLIC Threads::Threads BS::thread_pool ${CMAKE_DL_LIBS}
-                $<TARGET_NAME_IF_EXISTS:nvtx3::nvtx3-cpp>
+                $<TARGET_NAME_IF_EXISTS:nvtx3::nvtx3-cpp> $<TARGET_NAME_IF_EXISTS:CURL::libcurl>
 )
 
 target_compile_definitions(
