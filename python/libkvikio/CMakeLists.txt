@@ -41,3 +41,14 @@ set(KvikIO_BUILD_TESTS OFF)
 set(CUDA_STATIC_RUNTIME ON)
 
 add_subdirectory(../../cpp kvikio-cpp)
+
+if(USE_NVCOMP_RUNTIME_WHEEL)
+  set(rpaths "$ORIGIN/../../nvidia/nvcomp")
+  foreach(tgt IN LISTS RAPIDS_CYTHON_CREATED_TARGETS)
+    set_property(
+      TARGET ${tgt}
+      PROPERTY INSTALL_RPATH ${rpaths}
+      APPEND
+    )
+  endforeach()
+endif()
