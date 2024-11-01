@@ -38,6 +38,9 @@ unset(kvikio_FOUND)
 
 set(KvikIO_BUILD_EXAMPLES OFF)
 set(KvikIO_BUILD_TESTS OFF)
+if(USE_NVCOMP_RUNTIME_WHEEL)
+  set(KvikIO_EXPORT_NVCOMP OFF)
+endif()
 set(CUDA_STATIC_RUNTIME ON)
 
 add_subdirectory(../../cpp kvikio-cpp)
